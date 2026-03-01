@@ -66,9 +66,7 @@ pip install fastapi uvicorn soco aiohttp python-multipart mutagen
 
 ### node-sonos-http-api
 
-```bash
-npm install -g node-sonos-http-api
-```
+Please install according to https://github.com/jishi/node-sonos-http-api.
 
 The `clip` command — which plays a short audio file without permanently changing the playback state — is provided exclusively by node-sonos-http-api. All other operations use SoCo directly.
 
@@ -89,8 +87,8 @@ source .venv/bin/activate
 pip install fastapi uvicorn soco aiohttp python-multipart mutagen
 
 # 4. Place your MP3 files in the node-sonos-http-api clips directory
-#    (default: ~/Projekte/node-sonos-http-api/clips/)
-cp doorbell.mp3 ~/Projekte/node-sonos-http-api/clips/
+#    (default: node-sonos-http-api/static/clips/)
+cp doorbell.mp3 ~/node-sonos-http-api/static/clips/
 ```
 
 ---
@@ -105,7 +103,7 @@ SPEAKER_IP: str = "192.168.1.102"
 
 # Directory containing MP3 ringtones.
 # Must be the clips/ directory of node-sonos-http-api.
-MP3_DIR = os.path.expanduser("~/Projekte/node-sonos-http-api/clips")
+MP3_DIR = os.path.expanduser("~/node-sonos-http-api/static/clips")
 
 # URL of the running node-sonos-http-api instance
 SONOS_HTTP_API_URL = "http://localhost:5005"
@@ -123,7 +121,8 @@ DEFAULT_VOLUME = 40
 ### 1. Start node-sonos-http-api
 
 ```bash
-node /usr/local/lib/node_modules/node-sonos-http-api/server.js
+cd node-sonos-http-api
+npm start
 ```
 
 Verify it is running:

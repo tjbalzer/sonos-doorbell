@@ -1,0 +1,33 @@
+[Unit]
+Description=Sonos Doorbell Service
+Documentation=https://github.com/youruser/sonos-doorbell
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=tom
+Group=tom
+WorkingDirectory=/home/tom/Projekte/sonos-doorbell
+
+# Activate virtual environment and start the service
+ExecStart=/home/tom/Projekte/sonos-doorbell/.venv/bin/uvicorn \
+    main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --log-level info
+
+# Restart on failure, but not if the process exits cleanly
+Restart=on-failure
+RestartSec=5
+
+# Allow sufficient time for Sonos discovery at startup
+TimeoutStartSec=30
+
+# Logging — output appears in: journalctl -u doorbell
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=doorbell
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+# Sonos Doorbell Service – Abhängigkeiten
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+soco>=0.30.0              # UPnP: Statusabfragen, Backup, Restore
+aiohttp>=3.9.0            # Async HTTP-Client für sonos-http-api
+mutagen>=1.47.0           # MP3-Dauer automatisch ermitteln
+aiofiles>=23.2.1          # async Datei-Operationen
+python-multipart>=0.0.9   # für zukünftige File-Upload-Endpoints
+
+# Externe Voraussetzung (Node.js, kein pip):
+#   npm install -g node-sonos-http-api
+#   node /usr/local/lib/node_modules/node-sonos-http-api/server.js

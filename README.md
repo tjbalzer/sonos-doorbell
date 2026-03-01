@@ -1,8 +1,3 @@
-# sonos-doorbell
-Play doorbell file via Sonos speakers via http request/API.
-
-This is a result of a vibe coding session with Anthropic Claude (Sonnet 4.6).
-
 # Sonos Doorbell Service
 
 A lightweight FastAPI service that plays an MP3 doorbell sound on a single Sonos speaker. If music is currently playing, it is interrupted for the duration of the doorbell tone and then seamlessly restored — including playlist context.
@@ -11,32 +6,16 @@ A lightweight FastAPI service that plays an MP3 doorbell sound on a single Sonos
 
 ## Table of Contents
 
-- [sonos-doorbell](#sonos-doorbell)
-- [Sonos Doorbell Service](#sonos-doorbell-service)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Requirements](#requirements)
-    - [System](#system)
-    - [Python packages](#python-packages)
-    - [node-sonos-http-api](#node-sonos-http-api)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Running the Service](#running-the-service)
-    - [1. Start node-sonos-http-api](#1-start-node-sonos-http-api)
-    - [2. Start the doorbell service](#2-start-the-doorbell-service)
-    - [3. Run as a systemd service (optional)](#3-run-as-a-systemd-service-optional)
-  - [API Reference](#api-reference)
-    - [`GET /ring`](#get-ring)
-    - [`POST /ring`](#post-ring)
-    - [`GET /status`](#get-status)
-    - [`GET /ringtones`](#get-ringtones)
-    - [`GET /health`](#get-health)
-  - [Architecture](#architecture)
-    - [Component overview](#component-overview)
-  - [How State Restore Works](#how-state-restore-works)
-    - [Why queue-based restore matters](#why-queue-based-restore-matters)
-  - [Known Limitations](#known-limitations)
-  - [Project Structure](#project-structure)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Service](#running-the-service)
+- [API Reference](#api-reference)
+- [Architecture](#architecture)
+- [How State Restore Works](#how-state-restore-works)
+- [Known Limitations](#known-limitations)
+- [Project Structure](#project-structure)
 
 ---
 
@@ -146,24 +125,32 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 ### 3. Run as a systemd service (optional)
 
-```ini
-# /etc/systemd/system/doorbell.service
-[Unit]
-Description=Sonos Doorbell Service
-After=network.target
-
-[Service]
-User=youruser
-WorkingDirectory=/home/youruser/sonos-doorbell
-ExecStart=/home/youruser/sonos-doorbell/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-```
+A ready-to-use service file is included in the repository as `doorbell.service`.
+Adjust the `User`, `Group`, and `WorkingDirectory` paths to match your setup, then install it:
 
 ```bash
+# Copy and adjust the service file
+sudo cp doorbell.service /etc/systemd/system/
+
+# Reload systemd and enable the service
+sudo systemctl daemon-reload
 sudo systemctl enable --now doorbell
+```
+
+**Useful commands:**
+
+```bash
+# Check service status
+systemctl status doorbell
+
+# Follow live log output
+journalctl -u doorbell -f
+
+# Restart after a configuration change
+sudo systemctl restart doorbell
+
+# Stop the service
+sudo systemctl stop doorbell
 ```
 
 ---
@@ -270,20 +257,6 @@ curl http://localhost:8000/health
 
 ---
 
-## Architecture
-
-The service uses a hybrid approach combining two libraries:
-
-| Library                     | Role                                 |
-|-----------------------------|--------------------------------------|
-| **SoCo** (UPnP)             | Read state, backup, restore          |
-| **node-sonos-http-api** (HTTP) | Play the doorbell clip            |
-
-SoCo provides direct, structured access to the Sonos UPnP stack and is used for all read and restore operations. node-sonos-http-api is used exclusively for the `clip` command, which handles the interruption of playback internally and blocks until the clip has finished — making it the most reliable method for write operations.
-
-### Component overview
-
-```
 HTTP Client (doorbell hardware / browser)
         │
         ▼

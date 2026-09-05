@@ -88,7 +88,7 @@ def _validate_ringtone_filename(filename: str) -> str:
 
     real_dir = os.path.realpath(MP3_DIR)
     real_path = os.path.realpath(os.path.join(MP3_DIR, filename))
-    if not real_path.startswith(real_dir + os.sep):
+    if os.path.commonpath([real_dir, real_path]) != real_dir:
         raise HTTPException(
             status_code=422,
             detail="Filename must resolve inside the clips directory.",

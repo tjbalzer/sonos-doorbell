@@ -15,6 +15,7 @@ Wraps all calls made via the sonos-http-api:
 
 Zone names correspond to room names in the Sonos app (case-insensitive).
 Zone names are always URL-encoded before being passed to the API.
+Clip filenames are URL-encoded as well.
 
 Prerequisite: sonos-http-api must be running locally, e.g. on port 5005.
   npm install -g node-sonos-http-api
@@ -81,7 +82,7 @@ class SonosHttpApiClient:
     async def clip(
         self,
         zone: str,
-        clip_url: str,
+        filename: str,
         volume: int,
     ) -> bool:
         """
@@ -94,14 +95,14 @@ class SonosHttpApiClient:
 
         Args:
             zone:      Zone name (room name in Sonos app), e.g. "Kitchen"
-            clip_url:  MP3 filename in the clips/ directory of sonos-http-api
+            filename:  MP3 filename in the clips/ directory of sonos-http-api
             volume:    Playback volume 1–100
 
         Returns:
             True on success, False on error
         """
         # Important: use clip_timeout — the API responds only after playback ends.
-        path = f"/{self._encode_zone(zone)}/clip/{clip_url}/{volume}"
+        path = f"/{self._encode_zone(zone)}/clip/{self._encode_zone(filename)}/{volume}"
         return await self._get(
             path,
             description=f"clip on '{zone}'",

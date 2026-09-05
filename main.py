@@ -56,6 +56,48 @@ SONOS_HTTP_API_URL = "http://localhost:5005"
 DEFAULT_VOLUME = 40
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+def _validate_ringtone_filename(filename: str) -> str:
+    """
+    Validates a ringtone filename supplied via the API.
+
+    Prevents path traversal (CWE-22): only a plain basename ending in '.mp3'
+    that resolves inside MP3_DIR is accepted. Raises HTTPException(422) otherwise.
+    """
+    if not filename:
+        raise HTTPException(status_code=422, detail="Filename must not be empty.")
+
+    if filename in (".", ".."):
+        raise HTTPException(
+            status_code=422,
+            detail="Filename must be a plain file name (no path components).",
+        )
+
+    if os.path.basename(filename) != filename:
+        raise HTTPException(
+            status_code=422,
+            detail="Filename must be a plain file name (no path components).",
+        )
+
+    if not filename.endswith(".mp3"):
+        raise HTTPException(
+            status_code=422,
+            detail="Filename must end in '.mp3'.",
+        )
+
+    real_dir = os.path.realpath(MP3_DIR)
+    real_path = os.path.realpath(os.path.join(MP3_DIR, filename))
+    if not real_path.startswith(real_dir + os.sep):
+        raise HTTPException(
+            status_code=422,
+            detail="Filename must resolve inside the clips directory.",
+        )
+
+    return filename
+
+
+# ---------------------------------------------------------------------------
 # Lifespan / App
 # ---------------------------------------------------------------------------
 controller: Optional[SonosController] = None
@@ -122,6 +164,8 @@ async def ring(request: RingRequest, background_tasks: BackgroundTasks):
     Plays the specified MP3 ringtone on the configured speaker.
     If music is currently playing, it is interrupted and resumed afterwards.
     """
+    _validate_ringtone_filename(request.filename)
+
     if controller is None:
         raise HTTPException(status_code=503, detail="Controller not initialised")
 
@@ -152,6 +196,8 @@ async def ring_get(
     filename: str = Query("doorbell.mp3", description="MP3 filename"),
     volume: int = Query(DEFAULT_VOLUME, ge=1, le=100, description="Playback volume 1–100"),
 ):
+    _validate_ringtone_filename(filename)
+
     if controller is None:
         raise HTTPException(status_code=503, detail="Controller not initialised")
 

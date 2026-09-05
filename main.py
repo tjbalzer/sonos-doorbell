@@ -58,7 +58,7 @@ DEFAULT_VOLUME = 40
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def _validate_ringtone_filename(filename: str) -> str:
+def _validate_ringtone_filename(filename: str) -> None:
     """
     Validates a ringtone filename supplied via the API.
 
@@ -93,8 +93,6 @@ def _validate_ringtone_filename(filename: str) -> str:
             status_code=422,
             detail="Filename must resolve inside the clips directory.",
         )
-
-    return filename
 
 
 # ---------------------------------------------------------------------------
